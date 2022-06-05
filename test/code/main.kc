@@ -1,0 +1,14 @@
+int kuba = 1E6
+any[] kubaArr = [1, "Hello"]
+
+void func main(str a, bool b, arr c, obj<Object> d, any e, int f):
+    Output.log(a, b ? "Yes" : "No", c.join("X"), d, e, f, kuba)
+    Output.log(kubaArr.str(str func (any value, int index){return str(index) + ": " + str(value)}))
+    #Kuba
+    #*Hello
+    Jacob*#
+    #Ahoj1
+    #Ahoj2
+    #Ahoj3
+    #Ahoj4
+    return "An error should be there, because main func is void."
