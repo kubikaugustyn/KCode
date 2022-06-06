@@ -1,9 +1,14 @@
-int kuba = 1E6
-any[] kubaArr = [1, "Hello"]
+const int kuba = 1E6
+var any[] kubaArr = [1, "Hello"]
 
-void func main(str a, bool b, arr c, obj<Object> d, any e, int f):
+const str func myStr(any value, int index):
+    return str(index) + ": " + str(value)
+
+const void func main(const str a, const bool b, const arr c, const obj<Object> d, const any e, const int f):
     Output.log(a, b ? "Yes" : "No", c.join("X"), d, e, f, kuba)
-    Output.log(kubaArr.str(str func (any value, int index){return str(index) + ": " + str(value)}))
+    Output.log(str(kubaArr, myStr))
+    kubaArr.push("Kuba is", 0)
+    Output.log(str(kubaArr, myStr))
     #Kuba
     #*Hello
     Jacob*#
