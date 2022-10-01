@@ -1,0 +1,6 @@
+import Output from 'native'
+
+const func str myStr(const any value, const int index):
+    return str(index) + ": " + str(value)
+
+export myStr

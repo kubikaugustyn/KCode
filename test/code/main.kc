@@ -1,13 +1,16 @@
+import Output, File, ScriptPositions as p, ScriptPosition as sp from 'native'
+import myStr from 'stringifier.kc'
+
 const int kuba = 1E6
-var any[] kubaArr = [1, "Hello"]
+const bool test = true
+const int[H] two_five_five = Hff ##integer 255 in base 16 or Hex
+var arr[any] kubaArr = [1, "SMART"]
 
-const_func str myStr(any value, int index):
-    return str(index) + ": " + str(value)
-
-const_func void main(const str a, const bool b, const arr c, const obj<Object> d, const any e, const int f):
-    Output.log(a, b ? "Yes" : "No", c.join("X"), d, e, f, kuba)
-    Output.log(str(kubaArr, myStr))
-    kubaArr.push("Kuba is", 0)
+const func void main(const str a, const bool b, const arr[str] c, const obj<Object> d, const any e, const int f):
+    Output.log(a, b ? "Yes" : "No", !b ? "Inverted Yes" : "Inverted No", c.join("X"), d, e, f, kuba)
+    Output.log(str(kubaArr, myStr)) ## Stringifies arr[*] kubaArr with function myStr that is given for each child value and it's corresponding index
+    kubaArr.set("Kuba is", 0) ## Sets value to index 0
+    kubaArr.push("very much.") ## Pushes value to end of the array
     Output.log(str(kubaArr, myStr))
     ##Kuba
     #*Hello
@@ -16,4 +19,10 @@ const_func void main(const str a, const bool b, const arr c, const obj<Object> d
     ##Ahoj2
     ##Ahoj3
     ##Ahoj4
+    const obj<File> file = new File('../files/test.txt')
+    const arr[char] chars = file.read()
+    Output.log(chars) ## This should log a chars converted to string
     return "An error should be there, because main func is void."
+
+if sp is p.main:
+    main("Hello world.", true, ["BA", "TRI", ""], {test, "kuba-smart-level": kuba}, true, 841082)

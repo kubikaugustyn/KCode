@@ -88,7 +88,7 @@ class Lexer:
         return False, "", ""
 
     def _make_tokens(self):
-        #Filter out blank lines, one line and multiline comments
+        # Filter out blank lines, one line and multiline comments
         new_lines = []
         comment = False
         for line in self.lines:
@@ -99,7 +99,7 @@ class Lexer:
                     new_lines.append(line)
             elif line.rstrip()[-2:] == "*#":
                 comment = False
-        #Parse lines one by one
+        # Parse lines one by one
         for line in new_lines:
             line_type = ""
             stage = 0
