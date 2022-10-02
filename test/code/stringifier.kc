@@ -1,6 +1,6 @@
 import Output from 'native'
 
-const func str myStr(const any value, const int index):
-    return str(index) + ": " + str(value)
+const func str myStrSpecialName(const any value, const int index):
+    return d'{str(index)}: {str(value)}'
 
-export myStr
+export myStrSpecialName as myStr

@@ -16,9 +16,8 @@ class Compiler:
     def compile(self, verboseCompile):
         self.verboseCompile = verboseCompile
         self.print("Compile", self.file.path)
-        lexer = Lexer(self.file.lines)
-        myTokens = []
-        for token in lexer.tokens:
-            myTokens.append(token.arguments)
-        self.print("Tokens:", lexer.tokens)
-        self.print("Tokens:", myTokens)
+        lexer = Lexer(self.file.content)
+        tokens = lexer.generate_tokens()
+        self.print("Tokens:", tokens)
+        for token in tokens:
+            print(f"Token: {token}")

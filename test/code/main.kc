@@ -1,16 +1,21 @@
-import Output, File, ScriptPositions as p, ScriptPosition as sp from 'native'
+import Output, File, Range, ScriptPositions as p, ScriptPosition as sp from 'native'
 import myStr from 'stringifier.kc'
 
+const str multilineString = "*Hello
+World
+!!!*"
 const int kuba = 1E6
 const bool test = true
-const int[H] two_five_five = Hff ##integer 255 in base 16 or Hex
+const int<H> two_five_five = Hff ##integer 255 in base 16 or Hex
 var arr[any] kubaArr = [1, "SMART"]
 
 const func void main(const str a, const bool b, const arr[str] c, const obj<Object> d, const any e, const int f):
-    Output.log(a, b ? "Yes" : "No", !b ? "Inverted Yes" : "Inverted No", c.join("X"), d, e, f, kuba)
+    Output.log(a, b ? "Yes" : "No", !b ? "Inverted Yes" : "Inverted No", c.join("X"), d, e, f, kuba) ## Prints all of it's arguments into output
     Output.log(str(kubaArr, myStr)) ## Stringifies arr[*] kubaArr with function myStr that is given for each child value and it's corresponding index
     kubaArr.set("Kuba is", 0) ## Sets value to index 0
-    kubaArr.push("very much.") ## Pushes value to end of the array
+    kubaArr.push("very", 1) ## Pushes value to index 1
+    kubaArr.push("very much") ## Pushes value to end of the array
+    kubaArr.set("every day!", -1) ## Sets value to index length + 1 + (-1)
     Output.log(str(kubaArr, myStr))
     ##Kuba
     #*Hello
@@ -22,7 +27,11 @@ const func void main(const str a, const bool b, const arr[str] c, const obj<Obje
     const obj<File> file = new File('../files/test.txt')
     const arr[char] chars = file.read()
     Output.log(chars) ## This should log a chars converted to string
+    var int i
+    dynvar int j = i * 5
+    for i of Range(10):
+        Output.log(d'{i} is corresponding to {j}.')
     return "An error should be there, because main func is void."
 
-if sp is p.main:
+if sp is p.main and test: ## Run main if script is run, similar to if __name__ == '__main__': in python
     main("Hello world.", true, ["BA", "TRI", ""], {test, "kuba-smart-level": kuba}, true, 841082)

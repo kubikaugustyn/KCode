@@ -4,6 +4,7 @@ __author__ = "kubik.augustyn@post.cz"
 import os
 import compile
 
+
 class File:
     def __init__(self, path, cached_stamp=None):
         self.path = path
@@ -16,7 +17,7 @@ class File:
             self.content = f.read()
             self.lines = self.content.splitlines()
             self.content_lines = "\n".join(self.lines)
-        self.compiler=compile.Compiler(self)
+        self.compiler = compile.Compiler(self)
 
     def checkChange(self):
         stamp = os.stat(self.path).st_mtime
@@ -31,5 +32,6 @@ class File:
                 # print(self.content_lines)
                 return True
         return False
-    def compile(self,verboseCompile=False):
+
+    def compile(self, verboseCompile=False):
         self.compiler.compile(verboseCompile)

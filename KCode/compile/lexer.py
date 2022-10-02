@@ -1,178 +1,234 @@
-#  -*- coding: utf-8 -*-
-__author__ = "kubik.augustyn@post.cz"
+from .tokens import Token, TokenType
 
-from copy import copy
-
-
-class TokenAttributes:
-    def __init__(self):
-        self.TYPE = "type"
-        self.CONST_VARIABLE = "const_variable"
-        self.VARIABLE_TYPE = "variable_type"
-        self.VARIABLE_TYPE_EXTEND = "variable_type_extend"
-        self.VARIABLE_NAME = "variable_name"
-        self.VARIABLE_VALUE_STRING = "variable_value_string"
-        self.CONST_FUNCTION = "const_function"
-        self.FUNCTION_RETURN_TYPE = "function_return_type"
-
-
-class TokenTypes:
-    def __init__(self):
-        self.VARIABLE = "variable"
-        self.FUNCTION = "function"
-
-
-TATTR = TokenAttributes()
-TTYPE = TokenTypes()
-NONE = None
-TAB = '    '
-
-
-class Token:
-    def __init__(self):
-        self.arguments = {}
-
-    def __setitem__(self, key, value):
-        self.arguments[key] = value
-
-    def __getitem__(self, item):
-        try:
-            return self.arguments[item]
-        except:
-            return None
+DIGITS = '0123456789'
+SPACE = ' '
+TAB = ['    ']
+NEWLINE = ['\n', '\r']
+STRING = ["'", '"']
+ALLPARENS = "()[]{}"
+DATATYPES = ['int', 'bool', 'arr', 'any', 'void', 'str', 'obj', 'char']
 
 
 class Lexer:
-    def __init__(self, lines):
-        self.lines = lines
-        self.tokens = []
-        self._phrase = ""
-        self._token = Token()
-        self._var_types = [
-            "any",
-            "int",
-            "str",
-            "bool",
-            "arr",
-            "obj"
-        ]
-        self._func_return_types = copy(self._var_types)
-        self._func_return_types.append("void")
-        self._make_tokens()
+    def __init__(self, text):
+        self.text = iter(text)
+        self.advance()
 
-    def _reset_phrase(self):
-        temp = copy(self._phrase)
-        self._phrase = ""
-        return temp
+    def advance(self):
+        try:
+            self.current_char = next(self.text)
+        except StopIteration:
+            self.current_char = None
 
-    def _add_token(self):
-        self.tokens.append(self._token)
-        self._token = Token()
-
-    def _set_token_attribute(self, key, value):
-        self._token[key] = value
-
-    def _is_token_attribute(self, key, value):
-        return self._token[key] == value
-
-    def _error(self, message):
-        print(message)
-        exit(1)
-
-    def _is_at_start(self, arr=None, string=""):
-        if arr is None:
-            arr = []
-        for item in arr:
-            if string.find(item) == 0:
-                return True, string[:len(item)], string[len(item):]
-        return False, "", ""
-
-    def _make_tokens(self):
-        # Filter out blank lines, one line and multiline comments
-        new_lines = []
-        comment = False
-        for line in self.lines:
-            if line != "" and line.lstrip()[0:2] != "##" and not comment:
-                if line.lstrip()[0:2] == "#*":
-                    comment = True
+    def generate_tokens(self):
+        while self.current_char != None:
+            if self.current_char in SPACE:
+                num = self.get_spaces_num()
+                for t in TAB:
+                    if num % len(t) == 0:
+                        for _ in range(int(num / len(t))):
+                            yield Token(TokenType.TAB)
+            elif self.current_char == '.' or self.current_char in DIGITS:
+                yield self.generate_number()
+            elif self.current_char == '+':
+                self.advance()
+                yield Token(TokenType.PLUS)
+            elif self.current_char == '-':
+                self.advance()
+                yield Token(TokenType.MINUS)
+            elif self.current_char == '*':
+                self.advance()
+                yield Token(TokenType.MULTIPLY)
+            elif self.current_char == '/':
+                self.advance()
+                yield Token(TokenType.DIVIDE)
+            elif self.current_char == '(':
+                self.advance()
+                yield Token(TokenType.LPAREN)
+            elif self.current_char == ')':
+                self.advance()
+                yield Token(TokenType.RPAREN)
+            elif self.current_char == '[':
+                self.advance()
+                yield Token(TokenType.LBRACKET)
+            elif self.current_char == ']':
+                self.advance()
+                yield Token(TokenType.RBRACKET)
+            elif self.current_char == '{':
+                self.advance()
+                yield Token(TokenType.LBRACE)
+            elif self.current_char == '}':
+                self.advance()
+                yield Token(TokenType.RBRACE)
+            elif self.current_char in TAB:
+                yield Token(TokenType.TAB)
+                self.advance()
+            elif self.current_char in NEWLINE:
+                yield self.generate_newline()
+            elif self.current_char in STRING or self.current_char == "d":
+                if self.current_char == "d":
+                    self.advance()
+                    if self.current_char not in STRING:
+                        continue
+                    str_type = TokenType.DYNAMICSTRING
                 else:
-                    new_lines.append(line)
-            elif line.rstrip()[-2:] == "*#":
-                comment = False
-        # Parse lines one by one
-        for line in new_lines:
-            line_type = ""
-            stage = 0
-            index = 0
-            # print(f"'{line}'")
-            offset = line.count(TAB)
-            line = line[len(offset * TAB):]
-            print(offset, f"{offset * TAB}'{line}'")
-            for char in line:
-                # print(f"'{self._phrase}'")
-                """if self._phrase == "var" or self._phrase == "const":
-                    self._set_token_attribute(TATTR.TYPE, TTYPE.VARIABLE)
-                    self._set_token_attribute(TATTR.CONST_VARIABLE, self._phrase == "const")
-                    self._reset_phrase()
-                elif self._is_token_attribute(TATTR.TYPE, TTYPE.VARIABLE):
-                    if self._var_types.__contains__(self._phrase):
-                        self._set_token_attribute(TATTR.VARIABLE_TYPE, self._phrase)
-                        self._reset_phrase()
-                    elif char == " " and not self._is_token_attribute(TATTR.VARIABLE_TYPE, NONE) and \
-                            self._is_token_attribute(TATTR.VARIABLE_NAME, NONE) and self._phrase != " ":
-                        self._set_token_attribute(TATTR.VARIABLE_NAME, self._phrase[:-1])
-                        self._reset_phrase()
-                    elif self._phrase == " ":
-                        self._reset_phrase()"""
-                if char == " ":
-                    if stage == 0 and line_type == "":
-                        if self._phrase == "var" or self._phrase == "const":
-                            line_type = "var"
-                            stage += 1
-                            self._set_token_attribute(TATTR.TYPE, TTYPE.VARIABLE)
-                            self._set_token_attribute(TATTR.CONST_VARIABLE, self._phrase == "const")
-                            self._reset_phrase()
-                        elif self._phrase == "var_func" or self._phrase == "const_func":
-                            line_type = "function"
-                            stage += 1
-                            self._set_token_attribute(TATTR.TYPE, TTYPE.FUNCTION)
-                            self._set_token_attribute(TATTR.CONST_FUNCTION, self._phrase == "const_func")
-                            self._reset_phrase()
-                    elif line_type == "var":
-                        if stage == 1:
-                            found, start, end = self._is_at_start(self._var_types, self._phrase)
-                            print(f'"{found}" "{start}" "{end}"')
-                            if found:
-                                stage += 1
-                                self._set_token_attribute(TATTR.VARIABLE_TYPE, start)
-                                if end:
-                                    self._set_token_attribute(TATTR.VARIABLE_TYPE_EXTEND, end)
-                                self._reset_phrase()
-                            else:
-                                self._error("Invalid variable type")
-                        elif stage == 2:
-                            stage += 1
-                            self._set_token_attribute(TATTR.VARIABLE_NAME, self._phrase)
-                            self._reset_phrase()
-                        elif stage == 3 and self._phrase == "=":
-                            stage += 1
-                            self._reset_phrase()
-                            self._set_token_attribute(TATTR.VARIABLE_VALUE_STRING, line[index + 1:])
-                            break
-                        else:
-                            self._error("Too much values for variable.")
-                    elif line_type == "function":
-                        if stage == 1:
-                            if self._func_return_types.__contains__(self._phrase):
-                                stage += 1
-                                self._set_token_attribute(TATTR.FUNCTION_RETURN_TYPE, self._phrase)
-                                self._reset_phrase()
-                            else:
-                                self._error("Invalid function return type")
-                self._phrase += char
-                if self._phrase == " ":
-                    self._reset_phrase()
-                index += 1
-            self._reset_phrase()
-            self._add_token()
-            print("************************************")
+                    str_type = TokenType.STRING
+                yield self.generate_string(str_type)
+            elif self.current_char == "=":
+                yield self.generate_equals()
+            elif self.current_char == ":":
+                yield Token(TokenType.COLON)
+                self.advance()
+            elif self.current_char == ",":
+                yield Token(TokenType.COMMA)
+                self.advance()
+            elif self.current_char == "#":
+                yield self.generate_comment()
+            else:
+                phrase = self.generate_to_space_or_token()
+                comma = False
+                if phrase.endswith(","):
+                    comma = True
+                    phrase = phrase[:-1]
+                if phrase == 'import':
+                    yield Token(TokenType.IMPORT)
+                elif phrase == "as":
+                    yield Token(TokenType.AS)
+                elif phrase == "from":
+                    yield Token(TokenType.FROM)
+                elif phrase == "return":
+                    yield Token(TokenType.RETURN)
+                elif phrase == "is":
+                    yield Token(TokenType.IS)
+                elif phrase == "const":
+                    yield Token(TokenType.CONST)
+                elif phrase == "var":
+                    yield Token(TokenType.VAR)
+                elif phrase == "dynvar":
+                    yield Token(TokenType.DYNAMICVAR)
+                elif phrase in DATATYPES:
+                    yield Token(TokenType.DATATYPE, phrase)
+                else:
+                    # raise Exception(f"Illegal character or phrase '{phrase}'")
+                    yield Token(TokenType.PHRASE, phrase)
+                if comma:
+                    yield Token(TokenType.COMMA)
+
+    def generate_newline(self):
+        self.advance()
+        if self.current_char in NEWLINE:
+            self.advance()
+        return Token(TokenType.NEWLINE)
+
+    def generate_equals(self):
+        num_equals = 0
+        while self.current_char is not None and self.current_char == "=":
+            num_equals += 1
+            self.advance()
+        if num_equals == 1:
+            return Token(TokenType.EQUALS)
+        elif num_equals == 2:
+            return Token(TokenType.IS)
+        else:
+            raise Exception(f"Illegal number of '=': {num_equals}")
+
+    def generate_string(self, str_type=TokenType.STRING):
+        beginning = self.current_char
+        text = ''
+        self.advance()
+        multiline = False
+        if self.current_char == "*":
+            self.advance()
+            multiline = True
+
+        while self.current_char is not None:
+            if self.current_char == beginning and not multiline:
+                self.advance()
+                break
+            elif self.current_char == "*" and multiline:
+                self.advance()
+                if self.current_char == beginning:
+                    self.advance()
+                    break
+                else:
+                    text += f'*{self.current_char}'
+            else:
+                text += self.current_char
+
+            self.advance()
+
+        return Token(str_type, text)
+
+    def get_spaces_num(self):
+        num = 0
+        while self.current_char is not None and self.current_char in SPACE:
+            num += 1
+            self.advance()
+        return num
+
+    def generate_to_space_or_token(self):
+        text = self.current_char
+        self.advance()
+
+        while self.current_char is not None and self.current_char not in SPACE and self.current_char not in NEWLINE and self.current_char not in ALLPARENS:
+            text += self.current_char
+            self.advance()
+
+        self.get_spaces_num()
+        return text
+
+    def generate_comment(self):
+        comment = ''
+        self.advance()
+        if self.current_char == "#":
+            multiline = False
+        elif self.current_char == "*":
+            multiline = True
+        else:
+            raise Exception(f"Illegal '{self.current_char}' after # comment beginning")
+        self.advance()
+
+        while self.current_char is not None:
+            if self.current_char in NEWLINE and not multiline:
+                self.advance()
+                break
+            elif self.current_char == "*" and multiline:
+                self.advance()
+                if self.current_char == "#":
+                    self.advance()
+                    break
+                else:
+                    comment += f'*{self.current_char}'
+            else:
+                comment += self.current_char
+
+            self.advance()
+
+        return Token(TokenType.COMMENT, comment)
+
+    def generate_number(self):
+        decimal_point_count = 0
+        number_str = self.current_char
+        self.advance()
+
+        while self.current_char != None and (self.current_char == '.' or self.current_char in DIGITS):
+            if self.current_char == '.':
+                decimal_point_count += 1
+                if decimal_point_count > 1:
+                    break
+
+            number_str += self.current_char
+            self.advance()
+
+        if number_str.startswith('.'):
+            number_str = '0' + number_str
+        if number_str.endswith('.'):
+            number_str += '0'
+
+        value = float(number_str)
+        if self.current_char == "E":  # 6.8E10 to 68000000000 (6.8 * 10^10)
+            self.advance()
+            to_power_of_ten = int(self.generate_number().value)
+            value = value * (10 ** to_power_of_ten)
+
+        return Token(TokenType.NUMBER, value)
